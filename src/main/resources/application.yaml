@@ -1,0 +1,25 @@
+spring:
+  # application configuration
+  application:
+    name: finstream-data-ingestion
+    version: 1.0.0-SNAPSHOT
+
+  # configuring mongodb database
+  mongodb:
+    database: finstream_data_ingestion
+    uri: mongodb+srv://blackviking1311_db_user:gDtsJv2VB0nXRIxw@finstream-ingestion.xejkhqv.mongodb.net/finstream_database?appName=finstream-ingestion
+
+  # servlet configuration for the rest api
+  mvc:
+    servlet:
+      path: "/v1/"
+  servlet:
+    multipart:
+      max-file-size: 5MB
+      max-request-size: 5MB
+
+# hdfs configuration
+hdfs:
+  uri: ${HDFS_URI:hdfs://localhost:9000}
+  upload:
+    path: ${UPLOAD_PATH:/finance/uploads/}
