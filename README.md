@@ -5,6 +5,7 @@
 [![MongoDB](https://img.shields.io/badge/MongoDB-Atlas-green.svg)](https://www.mongodb.com/)
 [![HDFS](https://img.shields.io/badge/Apache%20Hadoop-HDFS%203.3.6-blue.svg)](https://hadoop.apache.org/)
 [![Docker](https://img.shields.io/badge/Docker-Multi--stage-blue.svg)](https://www.docker.com/)
+[![CI Build](https://github.com/AnkitKumarSingh11/finstream-ingestion-service/actions/workflows/ci.yml/badge.svg)](https://github.com/AnkitKumarSingh11/finstream-ingestion-service/actions)
 [![OpenAPI 3.0](https://img.shields.io/badge/OpenAPI-3.0-blueviolet.svg)](https://swagger.io/)
 
 A high-performance, resilient Spring Boot microservice for ingesting financial statement files (PDF, CSV, JSON), persisting file streams to Apache HDFS, managing document metadata in MongoDB, and tracking processing state across external Spark / Airflow data pipelines.
@@ -67,11 +68,14 @@ A high-performance, resilient Spring Boot microservice for ingesting financial s
 ### 6. Type-Safe Configuration Properties
 - Strongly typed property binding via `@ConfigurationProperties(prefix = "hdfs")` for `hdfs.uri` and `hdfs.upload.path`.
 
-### 7. Health & Monitoring Endpoints
+### 7. Continuous Integration (GitHub Actions)
+- Automated Pull Request validation pipeline (`.github/workflows/ci.yml`) enforcing `mvn clean install` builds on all PRs.
+
+### 8. Health & Monitoring Endpoints
 - Spring Boot Actuator health endpoint at `/v1/actuator/health`.
 - Custom `HdfsHealthIndicator` reporting HDFS filesystem status.
 
-### 8. Interactive OpenAPI 3.0 & Swagger UI
+### 9. Interactive OpenAPI 3.0 & Swagger UI
 - Self-documenting REST API with embedded Swagger UI at `/v1/swagger-ui.html`.
 
 ---
@@ -133,6 +137,18 @@ Updates processing status and automatically updates `endDateTime` when completed
 
 ---
 
+## Continuous Integration (CI)
+
+GitHub Actions workflow is configured in `.github/workflows/ci.yml`.
+
+- **Triggers**: Executed automatically on every `pull_request` or `push` targeting `main`, `master`, or `develop`.
+- **Pipeline Execution**:
+  1. Sets up JDK 17 (Temurin distribution) with Maven dependency caching.
+  2. Runs `mvn clean install -B` to verify compilation, linting, and unit tests.
+  3. Archives Maven Surefire test reports as artifacts if a failure occurs.
+
+---
+
 ## Interactive Swagger & Actuator Endpoints
 
 When running locally:
@@ -159,16 +175,6 @@ docker-compose down
 ### Build Docker Image Manually
 ```bash
 docker build -t finstream-data-ingestion:latest .
-```
-
-Run container with environment variables:
-```bash
-docker run -d \
-  -p 8080:8080 \
-  -e MONGO_URI="mongodb+srv://user:pass@cluster.mongodb.net/finstream_database" \
-  -e HDFS_URI="hdfs://localhost:9000" \
-  --name finstream-ingestion \
-  finstream-data-ingestion:latest
 ```
 
 ---
@@ -198,6 +204,7 @@ Service will start on port `8080` with base path `/v1/`.
 
 - **Framework**: Spring Boot 3.3.2 (Actuator, Web, Mongo)
 - **Persistence**: Spring Data MongoDB, Apache Hadoop HDFS Client 3.3.6
+- **CI/CD**: GitHub Actions (`ci.yml`)
 - **Documentation**: SpringDoc OpenAPI 2.5.0 / Swagger UI
 - **Containerization**: Docker Multi-stage Build, Docker Compose
 - **Build Tool**: Apache Maven
