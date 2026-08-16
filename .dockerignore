@@ -1,0 +1,9 @@
+.git
+.gitignore
+.idea
+.gemini
+target/
+*.log
+README.md
+walkthrough.md
+implementation_plan.md

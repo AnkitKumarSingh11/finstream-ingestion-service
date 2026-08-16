@@ -1,0 +1,49 @@
+version: '3.8'
+
+services:
+  # FinStream Data Ingestion Application Service
+  app:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    container_name: finstream-data-ingestion
+    restart: unless-stopped
+    ports:
+      - "8080:8080"
+    environment:
+      - MONGO_URI=${MONGO_URI:-mongodb://mongodb:27017/finstream_database}
+      - HDFS_URI=${HDFS_URI:-hdfs://localhost:9000}
+      - UPLOAD_PATH=${UPLOAD_PATH:-/finance/uploads/}
+    depends_on:
+      mongodb:
+        condition: service_healthy
+    networks:
+      - finstream-network
+
+  # MongoDB Container Service
+  mongodb:
+    image: mongo:7.0
+    container_name: finstream-mongodb
+    restart: unless-stopped
+    ports:
+      - "27017:27017"
+    environment:
+      - MONGO_INITDB_DATABASE=finstream_database
+    volumes:
+      - mongo_data:/data/db
+    networks:
+      - finstream-network
+    healthcheck:
+      test: ["CMD", "mongosh", "--eval", "db.adminCommand('ping')"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+      start_period: 5s
+
+networks:
+  finstream-network:
+    driver: bridge
+
+volumes:
+  mongo_data:
+    driver: local

@@ -4,6 +4,7 @@
 [![Spring Boot 3.3.2](https://img.shields.io/badge/Spring%20Boot-3.3.2-brightgreen.svg)](https://spring.io/projects/spring-boot)
 [![MongoDB](https://img.shields.io/badge/MongoDB-Atlas-green.svg)](https://www.mongodb.com/)
 [![HDFS](https://img.shields.io/badge/Apache%20Hadoop-HDFS%203.3.6-blue.svg)](https://hadoop.apache.org/)
+[![Docker](https://img.shields.io/badge/Docker-Multi--stage-blue.svg)](https://www.docker.com/)
 [![OpenAPI 3.0](https://img.shields.io/badge/OpenAPI-3.0-blueviolet.svg)](https://swagger.io/)
 
 A high-performance, resilient Spring Boot microservice for ingesting financial statement files (PDF, CSV, JSON), persisting file streams to Apache HDFS, managing document metadata in MongoDB, and tracking processing state across external Spark / Airflow data pipelines.
@@ -66,7 +67,11 @@ A high-performance, resilient Spring Boot microservice for ingesting financial s
 ### 6. Type-Safe Configuration Properties
 - Strongly typed property binding via `@ConfigurationProperties(prefix = "hdfs")` for `hdfs.uri` and `hdfs.upload.path`.
 
-### 7. Interactive OpenAPI 3.0 & Swagger UI
+### 7. Health & Monitoring Endpoints
+- Spring Boot Actuator health endpoint at `/v1/actuator/health`.
+- Custom `HdfsHealthIndicator` reporting HDFS filesystem status.
+
+### 8. Interactive OpenAPI 3.0 & Swagger UI
 - Self-documenting REST API with embedded Swagger UI at `/v1/swagger-ui.html`.
 
 ---
@@ -128,47 +133,42 @@ Updates processing status and automatically updates `endDateTime` when completed
 
 ---
 
-## Interactive Swagger Documentation
+## Interactive Swagger & Actuator Endpoints
 
 When running locally:
 - **Swagger UI**: [http://localhost:8080/v1/swagger-ui.html](http://localhost:8080/v1/swagger-ui.html)
 - **OpenAPI JSON Spec**: [http://localhost:8080/v1/v3/api-docs](http://localhost:8080/v1/v3/api-docs)
+- **Health Check**: [http://localhost:8080/v1/actuator/health](http://localhost:8080/v1/actuator/health)
 
 ---
 
-## Configuration Properties
+## Containerization & Deployment
 
-Environment configuration in `src/main/resources/application.yaml`:
+### Run with Docker Compose
+To spin up the entire application stack including MongoDB locally:
 
-```yaml
-spring:
-  application:
-    name: finstream-data-ingestion
-  data:
-    mongodb:
-      database: finstream_database
-      uri: ${MONGO_URI:mongodb+srv://...}
-  mvc:
-    servlet:
-      path: "/v1/"
-  servlet:
-    multipart:
-      max-file-size: 5MB
-      max-request-size: 5MB
+```bash
+docker-compose up --build -d
+```
 
-hdfs:
-  uri: ${HDFS_URI:hdfs://localhost:9000}
-  upload:
-    path: ${UPLOAD_PATH:/finance/uploads/}
+To stop containers:
+```bash
+docker-compose down
+```
 
-springdoc:
-  api-docs:
-    path: /v3/api-docs
-  swagger-ui:
-    path: /swagger-ui.html
-    config-url: /v1/v3/api-docs/swagger-config
-    url: /v1/v3/api-docs
-    enabled: true
+### Build Docker Image Manually
+```bash
+docker build -t finstream-data-ingestion:latest .
+```
+
+Run container with environment variables:
+```bash
+docker run -d \
+  -p 8080:8080 \
+  -e MONGO_URI="mongodb+srv://user:pass@cluster.mongodb.net/finstream_database" \
+  -e HDFS_URI="hdfs://localhost:9000" \
+  --name finstream-ingestion \
+  finstream-data-ingestion:latest
 ```
 
 ---
@@ -178,7 +178,7 @@ springdoc:
 ### Prerequisites
 - **Java 17** or higher
 - **Maven 3.8+**
-- **MongoDB Atlas** or local instance
+- **MongoDB** (Atlas or local container)
 - **Hadoop HDFS** (optional for local testing with fallback)
 
 ### Build and Run Tests
@@ -196,7 +196,8 @@ Service will start on port `8080` with base path `/v1/`.
 
 ## Tech Stack Summary
 
-- **Framework**: Spring Boot 3.3.2
+- **Framework**: Spring Boot 3.3.2 (Actuator, Web, Mongo)
 - **Persistence**: Spring Data MongoDB, Apache Hadoop HDFS Client 3.3.6
 - **Documentation**: SpringDoc OpenAPI 2.5.0 / Swagger UI
+- **Containerization**: Docker Multi-stage Build, Docker Compose
 - **Build Tool**: Apache Maven
