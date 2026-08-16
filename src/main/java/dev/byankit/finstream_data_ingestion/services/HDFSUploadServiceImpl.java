@@ -72,18 +72,19 @@ public class HDFSUploadServiceImpl implements FileUploadService {
                     extension + Path.SEPARATOR +
                     fileName
         );
+        String fullFilePath = path.toString();
 
-        log.info("Streaming uploaded file '{}' ({}) to HDFS path: {}", file.getOriginalFilename(), file.getSize(), path);
+        log.info("Streaming uploaded file '{}' ({}) to HDFS path: {}", file.getOriginalFilename(), file.getSize(), fullFilePath);
 
         try (
             InputStream inputStream = file.getInputStream();
             FSDataOutputStream outputStream = hdfsFileSystem.create(path);
         ) {
             inputStream.transferTo(outputStream);
-            log.info("Successfully wrote stream to HDFS path: {}", path);
+            log.info("Successfully wrote stream to HDFS path: {}", fullFilePath);
         } catch (IOException e) {
-            log.error("Failed to write stream to HDFS path: {}", path, e);
-            throw new RuntimeException("Failed to stream file to HDFS path: " + path, e);
+            log.error("Failed to write stream to HDFS path: {}", fullFilePath, e);
+            throw new RuntimeException("Failed to stream file to HDFS path: " + fullFilePath, e);
         }
 
         FileMetadata fileMetadata;
@@ -92,33 +93,33 @@ public class HDFSUploadServiceImpl implements FileUploadService {
                 fileUploadRequest,
                 fileId,
                 fileName,
-                uploadPath,
+                fullFilePath,
                 file.getContentType(),
                 file.getSize()
             );
 
             saveFileProcessingMetadata(fileMetadata);
 
-            // Publish async file upload event
+            // Publish async file upload event carrying full HDFS file path
             eventPublisher.publishEvent(new FileUploadEvent(
                 fileMetadata.getFileId(),
                 fileMetadata.getDocumentId(),
                 fileUploadRequest.fileSource(),
                 fileUploadRequest.fileSourceType(),
-                uploadPath
+                fullFilePath
             ));
 
             log.info("Published FileUploadEvent for fileId: {}", fileMetadata.getFileId());
 
         } catch (Exception e) {
-            log.error("Database error after streaming to HDFS. Cleaning up orphaned file: {}", path, e);
+            log.error("Database error after streaming to HDFS. Cleaning up orphaned file: {}", fullFilePath, e);
             try {
                 if (hdfsFileSystem.exists(path)) {
                     hdfsFileSystem.delete(path, false);
-                    log.info("Successfully deleted orphaned file from HDFS: {}", path);
+                    log.info("Successfully deleted orphaned file from HDFS: {}", fullFilePath);
                 }
             } catch (IOException ioException) {
-                log.warn("Failed to delete orphaned file from HDFS: {}", path, ioException);
+                log.warn("Failed to delete orphaned file from HDFS: {}", fullFilePath, ioException);
             }
             throw e;
         }
@@ -140,7 +141,7 @@ public class HDFSUploadServiceImpl implements FileUploadService {
         FileUploadRequest request,
         String fileId,
         String fileName,
-        String hdfsUploadPath,
+        String fullFilePath,
         String contentType,
         long fileSize
     ) {
@@ -149,7 +150,7 @@ public class HDFSUploadServiceImpl implements FileUploadService {
         metadata.setFileId(fileId);
         metadata.setContentType(contentType);
         metadata.setFileSize(fileSize);
-        metadata.setFilePath(hdfsUploadPath);
+        metadata.setFilePath(fullFilePath);
         metadata.setSource(request.fileSource());
         metadata.setSourceType(request.fileSourceType());
 

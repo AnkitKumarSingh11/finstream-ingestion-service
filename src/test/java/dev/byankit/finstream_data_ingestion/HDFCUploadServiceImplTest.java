@@ -25,7 +25,7 @@ import static org.junit.jupiter.api.Assertions.*;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.ArgumentMatchers.eq;
 
-class HDFSUploadServiceImplTest {
+class HDFCUploadServiceImplTest {
 
     private FileMetadataService metadataService;
     private FileSystem hdfsFileSystem;
@@ -75,6 +75,8 @@ class HDFSUploadServiceImplTest {
 
         assertNotNull(result);
         assertEquals("doc-12345", result.getDocumentId());
+        assertTrue(result.getFilePath().startsWith("/test/hdfs/path/hdfc/bankstatement/csv/"), 
+                "FilePath should contain full HDFS path instead of root upload path");
 
         // Verify ProcessingMetadata was created with fileId & documentId
         ArgumentCaptor<ProcessingMetadata> procCaptor = ArgumentCaptor.forClass(ProcessingMetadata.class);
@@ -85,8 +87,10 @@ class HDFSUploadServiceImplTest {
         assertEquals(ProcessingStatus.UPLOADED, savedProcMeta.getProcessingStatus());
         assertNotNull(savedProcMeta.getStartDateTime());
 
-        // Verify FileUploadEvent was published
-        Mockito.verify(eventPublisher).publishEvent(any(FileUploadEvent.class));
+        // Verify FileUploadEvent was published with full file path
+        ArgumentCaptor<FileUploadEvent> eventCaptor = ArgumentCaptor.forClass(FileUploadEvent.class);
+        Mockito.verify(eventPublisher).publishEvent(eventCaptor.capture());
+        assertTrue(eventCaptor.getValue().filePath().startsWith("/test/hdfs/path/hdfc/bankstatement/csv/"));
     }
 
     @Test
