@@ -21,12 +21,20 @@ public class FileMetadataServiceImpl implements FileMetadataService {
 
     @Override
     public Optional<FileMetadata> getFileMetadataByFileId(String fileId) {
-        return this.fileMetadataRepository.findById(fileId);
+        Optional<FileMetadata> metadata = this.fileMetadataRepository.findByFileId(fileId);
+        if (metadata.isEmpty()) {
+            metadata = this.fileMetadataRepository.findById(fileId);
+        }
+        return metadata;
     }
 
     @Override
     public Optional<FileMetadata> getFileMetadataByDocumentId(String documentId) {
-        return Optional.empty();
+        Optional<FileMetadata> metadata = this.fileMetadataRepository.findById(documentId);
+        if (metadata.isEmpty()) {
+            metadata = this.fileMetadataRepository.findByFileId(documentId);
+        }
+        return metadata;
     }
 
     @Override

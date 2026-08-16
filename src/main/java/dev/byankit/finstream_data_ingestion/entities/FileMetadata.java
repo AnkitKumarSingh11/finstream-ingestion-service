@@ -2,9 +2,13 @@ package dev.byankit.finstream_data_ingestion.entities;
 
 import dev.byankit.finstream_data_ingestion.enums.FileSource;
 import dev.byankit.finstream_data_ingestion.enums.FileSourceType;
+import org.springframework.data.annotation.CreatedDate;
 import org.springframework.data.annotation.Id;
+import org.springframework.data.annotation.LastModifiedDate;
 import org.springframework.data.mongodb.core.index.Indexed;
 import org.springframework.data.mongodb.core.mapping.Document;
+
+import java.time.Instant;
 
 @Document(
     collection = "files_metadata"
@@ -23,6 +27,12 @@ public class FileMetadata {
     private FileSourceType sourceType;
     private FileSource source;
     private String filePath;
+
+    @CreatedDate
+    private Instant createdAt;
+
+    @LastModifiedDate
+    private Instant updatedAt;
 
     public String getFilePath() {
         return filePath;
@@ -86,5 +96,21 @@ public class FileMetadata {
 
     public void setSource(FileSource source) {
         this.source = source;
+    }
+
+    public Instant getCreatedAt() {
+        return createdAt;
+    }
+
+    public void setCreatedAt(Instant createdAt) {
+        this.createdAt = createdAt;
+    }
+
+    public Instant getUpdatedAt() {
+        return updatedAt;
+    }
+
+    public void setUpdatedAt(Instant updatedAt) {
+        this.updatedAt = updatedAt;
     }
 }

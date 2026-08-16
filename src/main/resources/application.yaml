@@ -5,9 +5,10 @@ spring:
     version: 1.0.0-SNAPSHOT
 
   # configuring mongodb database
-  mongodb:
-    database: finstream_data_ingestion
-    uri: mongodb+srv://blackviking1311_db_user:gDtsJv2VB0nXRIxw@finstream-ingestion.xejkhqv.mongodb.net/finstream_database?appName=finstream-ingestion
+  data:
+    mongodb:
+      database: finstream_database
+      uri: mongodb+srv://blackviking1311_db_user:gDtsJv2VB0nXRIxw@finstream-ingestion.xejkhqv.mongodb.net/finstream_database?appName=finstream-ingestion
 
   # servlet configuration for the rest api
   mvc:
@@ -17,6 +18,16 @@ spring:
     multipart:
       max-file-size: 5MB
       max-request-size: 5MB
+
+# springdoc openapi configuration
+springdoc:
+  api-docs:
+    path: /v3/api-docs
+  swagger-ui:
+    path: /swagger-ui.html
+    config-url: /v1/v3/api-docs/swagger-config
+    url: /v1/v3/api-docs
+    enabled: true
 
 # hdfs configuration
 hdfs:
