@@ -8,7 +8,7 @@ spring:
   data:
     mongodb:
       database: finstream_database
-      uri: mongodb+srv://blackviking1311_db_user:gDtsJv2VB0nXRIxw@finstream-ingestion.xejkhqv.mongodb.net/finstream_database?appName=finstream-ingestion
+      uri: ${DB_PASSWORD}
 
   # servlet configuration for the rest api
   mvc:
